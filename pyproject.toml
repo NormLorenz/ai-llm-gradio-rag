@@ -1,0 +1,22 @@
+[project]
+name = "ai-llm-gradio-rag"
+version = "0.1.0"
+description = "RAG Q&A Pipeline with Gradio, OpenAI, Pinecone, and LangChain"
+requires-python = ">=3.9"
+dependencies = [
+    "gradio",
+    "openai",
+    "pinecone-client",
+    "langchain",
+    "langchain-openai",
+    "langchain-pinecone",
+    "langchain-community",
+    "pypdf",
+]
+
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["main"]
