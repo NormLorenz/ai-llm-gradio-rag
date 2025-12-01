@@ -1,5 +1,4 @@
-# declare imports
-
+# Declare imports
 import gradio as gr
 import os
 from pinecone import Pinecone, ServerlessSpec
@@ -11,17 +10,23 @@ from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_pinecone import PineconeVectorStore
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 import tempfile
+from dotenv import load_dotenv
 
 
 # Initialize clients (set your API keys as environment variables)
-# export OPENAI_API_KEY="your-key"
-# export PINECONE_API_KEY="your-key"
+load_dotenv()
+openai_key = os.getenv("OPENAI_API_KEY", "")
+pinecone_key = os.getenv("PINECONE_API_KEY", "")
 
+# Set Pinecone index name
 PINECONE_INDEX_NAME = "rag-qa-index"
 
 
 class RAGPipeline:
+    """Class to handle RAG pipeline operations"""
+
     def __init__(self):
+        """Initialize RAG pipeline components"""
         self.embeddings = None
         self.vectorstore = None
         self.qa_chain = None
@@ -52,7 +57,7 @@ class RAGPipeline:
         except Exception as e:
             return f"✗ Pinecone initialization failed: {str(e)}"
 
-    def process_document(self, file, openai_key, pinecone_key, chunk_size, chunk_overlap):
+    def process_document(self, file, chunk_size, chunk_overlap):
         """Process uploaded document and store in Pinecone"""
         try:
             # Initialize APIs
@@ -161,23 +166,9 @@ with gr.Blocks(title="RAG Q&A Pipeline") as demo:
 
     with gr.Row():
         with gr.Column(scale=1):
-            gr.Markdown("### 🔑 API Configuration")
-            openai_key = gr.Textbox(
-                label="OpenAI API Key",
-                type="password",
-                placeholder="sk-..."
-            )
-            pinecone_key = gr.Textbox(
-                label="Pinecone API Key",
-                type="password",
-                placeholder="your-pinecone-key"
-            )
 
             gr.Markdown("### 📄 Document Upload")
-            file_input = gr.File(
-                label="Upload Document",
-                file_types=[".pdf", ".txt"]
-            )
+            file_input = gr.File(file_types=[".pdf", ".txt"])
 
             with gr.Accordion("⚙️ Advanced Settings", open=False):
                 chunk_size = gr.Slider(
@@ -225,8 +216,7 @@ with gr.Blocks(title="RAG Q&A Pipeline") as demo:
     # Event handlers
     process_btn.click(
         fn=pipeline.process_document,
-        inputs=[file_input, openai_key,
-                pinecone_key, chunk_size, chunk_overlap],
+        inputs=[file_input, chunk_size, chunk_overlap],
         outputs=status_output
     )
 
@@ -244,4 +234,4 @@ with gr.Blocks(title="RAG Q&A Pipeline") as demo:
 
 # Launch the app
 if __name__ == "__main__":
-    demo.launch(share=False)
+    demo.launch(share=False, inbrowser=True)
