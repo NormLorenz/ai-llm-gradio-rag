@@ -160,7 +160,7 @@ pipeline = RAGPipeline()
 
 # Create Gradio interface
 with gr.Blocks(title="RAG Q&A Pipeline") as demo:
-    gr.Markdown("# 📚 RAG Q&A Pipeline")
+    gr.Markdown("# 📚 Retrieval Augmented Generation (RAG)")
     gr.Markdown(
         "Upload a document (PDF or TXT) and ask questions about its content using AI-powered retrieval.")
 
