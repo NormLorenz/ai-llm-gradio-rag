@@ -57,6 +57,49 @@ class RAGPipeline:
         except Exception as e:
             return f"✗ Pinecone initialization failed: {str(e)}"
 
+    def load_existing_vectorstore(self):
+        """Load existing vector store from Pinecone if data exists"""
+        try:
+            # Initialize Pinecone connection
+            pinecone_status = self.initialize_pinecone(pinecone_key)
+            if "failed" in pinecone_status:
+                return False, "✗ Could not connect to Pinecone"
+
+            # Check if index has data
+            if self.index.describe_index_stats().total_vector_count == 0:
+                return False, "✗ Vector database is empty. Please process a document first."
+
+            # Initialize embeddings
+            self.embeddings = OpenAIEmbeddings(openai_api_key=openai_key)
+
+            # Load existing vector store
+            self.vectorstore = PineconeVectorStore(
+                index=self.index,
+                embedding=self.embeddings
+            )
+
+            # Initialize QA chain
+            llm = ChatOpenAI(
+                model_name="gpt-4",
+                temperature=0,
+                openai_api_key=openai_key
+            )
+
+            self.qa_chain = RetrievalQA.from_chain_type(
+                llm=llm,
+                chain_type="stuff",
+                retriever=self.vectorstore.as_retriever(
+                    search_kwargs={"k": 3}
+                ),
+                return_source_documents=True
+            )
+
+            vector_count = self.index.describe_index_stats().total_vector_count
+            return True, f"✓ Loaded existing vector database!\n- Vectors in index: {vector_count}\n- Ready for questions!"
+
+        except Exception as e:
+            return False, f"✗ Error loading vector database: {str(e)}"
+
     def process_document(self, file, chunk_size, chunk_overlap):
         """Process uploaded document and store in Pinecone"""
         try:
@@ -186,7 +229,12 @@ with gr.Blocks(title="RAG Q&A Pipeline") as demo:
                     label="Chunk Overlap"
                 )
 
-            process_btn = gr.Button("🚀 Process Document", variant="primary")
+            with gr.Row():
+                process_btn = gr.Button(
+                    "🚀 Process Document", variant="primary")
+                load_existing_btn = gr.Button(
+                    "📚 Load Existing Data", variant="secondary")
+
             status_output = gr.Textbox(
                 label="Status",
                 lines=5,
@@ -217,6 +265,12 @@ with gr.Blocks(title="RAG Q&A Pipeline") as demo:
     process_btn.click(
         fn=pipeline.process_document,
         inputs=[file_input, chunk_size, chunk_overlap],
+        outputs=status_output
+    )
+
+    load_existing_btn.click(
+        fn=lambda: pipeline.load_existing_vectorstore()[1],
+        inputs=[],
         outputs=status_output
     )
 

@@ -13,6 +13,7 @@ This application combines state-of-the-art technologies to create an intelligent
 - 🔗 **Source Attribution**: Get answers with citations from the original document
 - ⚙️ **Advanced Settings**: Customize chunk size and overlap for optimal processing
 - 🚀 **Real-time Processing**: Instant document indexing and query responses
+- 📚 **Load Existing Data**: Skip reprocessing by loading previously indexed documents from Pinecone
 
 ## Technologies Used
 
@@ -67,17 +68,20 @@ This application combines state-of-the-art technologies to create an intelligent
 │  (Pinecone)          │
 └──────────┬───────────┘
            │
-    ┌──────┴───────┐
-    │              │
-    ▼              ▼
-┌─────────┐  ┌──────────────┐
-│ Question│  │ RetrievalQA  │
-│ Input   │  │ Chain        │
-└─────────┘  │ (GPT-4)      │
-    │        └──────────────┘
-    │              │
-    └──────┬───────┘
-           ▼
+    ┌──────┴───────────┐
+    │                  │
+    ▼                  ▼
+┌─────────────┐  ┌──────────────┐
+│ Load Query  │  │ New Query    │
+│ Existing    │  │ RetrievalQA  │
+│ VectorStore │  │ Chain        │
+└─────────────┘  │ (GPT-4)      │
+    │            └──────────────┘
+    │                  │
+    │            ┌─────┴
+    │            │
+    └────────┬───┘
+             ▼
     ┌────────────────┐
     │ Answer with    │
     │ Sources        │
@@ -128,12 +132,27 @@ uv run main.py
 
 The Gradio interface will open in your browser (default: `http://localhost:7860`).
 
-### Steps:
-1. Upload a PDF or TXT document
-2. (Optional) Adjust chunk size and overlap in Advanced Settings
-3. Click "Process Document"
-4. Ask questions about the document content
-5. View answers with source citations
+### Processing New Documents
+
+1. Upload a PDF or TXT document using the file upload box
+2. (Optional) Adjust chunk size and overlap in Advanced Settings for fine-tuned processing
+3. Click **"🚀 Process Document"** to process and index the document
+4. Wait for the status message confirming successful processing
+5. Ask questions about the document content
+
+### Loading Previously Indexed Documents
+
+If you've already processed and indexed documents in Pinecone, you can skip the processing step:
+
+1. Click **"📚 Load Existing Data"** to connect to Pinecone and load previously indexed vectors
+2. The system will display the number of vectors in the index
+3. Proceed directly to asking questions without reprocessing
+
+### Asking Questions
+
+1. Enter your question in the "Your Question" text box
+2. Click **"🔍 Get Answer"** or press Enter
+3. View the AI-generated answer with relevant source citations from the document
 
 ## Configuration
 
@@ -145,6 +164,33 @@ The Gradio interface will open in your browser (default: `http://localhost:7860`
 - **Model**: GPT-4 with temperature 0 for deterministic responses
 - **Retrieval**: Top-3 most relevant document chunks
 - **Vector Dimension**: 1536 (OpenAI embedding dimension)
+
+## Core Methods
+
+### `process_document(file, chunk_size, chunk_overlap)`
+Processes a new document and indexes it in Pinecone:
+- Loads PDF or TXT files
+- Splits text into semantic chunks
+- Creates embeddings using OpenAI
+- Stores vectors in Pinecone vector database
+- Initializes the QA chain for answering questions
+
+### `load_existing_vectorstore()`
+Loads a previously indexed vector store from Pinecone:
+- Connects to Pinecone
+- Checks if the index contains existing vectors
+- Loads the vector store without reprocessing documents
+- Initializes the QA chain for immediate questioning
+- Returns the number of vectors in the index
+
+**Use Case**: When you've already indexed documents in Pinecone and want to use them without reprocessing.
+
+### `answer_question(question)`
+Answers a question using the loaded vector store:
+- Retrieves the top-3 most relevant document chunks
+- Sends chunks and question to GPT-4
+- Returns answer with source citations
+- Handles edge cases (no document loaded, empty questions)
 
 ## Project Structure
 
