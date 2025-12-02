@@ -78,9 +78,9 @@ This application combines state-of-the-art technologies to create an intelligent
 └─────────────┘  │ (GPT-4)      │
     │            └──────────────┘
     │                  │
-    │            ┌─────┴
-    │            │
-    └────────┬───┘
+    │                  │
+    │                  │
+    └────────┬─────────┘
              ▼
     ┌────────────────┐
     │ Answer with    │
@@ -197,7 +197,6 @@ Answers a question using the loaded vector store:
 ```
 ai-llm-gradio-rag/
 ├── main.py                 # Main application file
-├── main.ipynb             # Jupyter notebook version
 ├── pyproject.toml         # Project configuration and dependencies
 ├── README.md              # This file
 └── LICENSE
