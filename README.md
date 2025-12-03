@@ -196,7 +196,8 @@ Answers a question using the loaded vector store:
 
 ```
 ai-llm-gradio-rag/
-├── main.py                 # Main application file
+├── main.py                # Main application file
+├── main.ipynb             # Jupyter Notebook Google Colab copy
 ├── pyproject.toml         # Project configuration and dependencies
 ├── README.md              # This file
 └── LICENSE
