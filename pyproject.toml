@@ -6,12 +6,12 @@ requires-python = ">=3.9"
 dependencies = [
     "gradio",
     "openai",
-    "pinecone-client",
     "langchain",
     "langchain-openai",
     "langchain-pinecone",
     "langchain-community",
     "pypdf",
+    "pinecone>=7.3.0",
 ]
 
 [build-system]
